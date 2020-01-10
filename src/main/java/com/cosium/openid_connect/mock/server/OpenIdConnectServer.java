@@ -45,7 +45,6 @@ public class OpenIdConnectServer {
   private static final String KTY = "RSA";
   private static final String ALGORITHM = "RS256";
 
-  private static final String SUB = UUID.randomUUID().toString();
   private static final String BEARER_TYPE = "Bearer";
   private static final String REFRESH_TYPE = "Offline";
   private static final String ID_TYPE = "ID";
@@ -58,6 +57,7 @@ public class OpenIdConnectServer {
   private final URI uri;
 
   private final Map<String, Client> clientById = new HashMap<>();
+  private User currentUser;
 
   private OpenIdConnectServer()
       throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException,
@@ -136,6 +136,10 @@ public class OpenIdConnectServer {
     clientById.put(id, new Client(id, secret));
   }
 
+  public void setCurrentUser(User user) {
+    this.currentUser = user;
+  }
+
   public void stop() {
     server.close();
   }
@@ -145,6 +149,11 @@ public class OpenIdConnectServer {
   }
 
   private void authenticate(RoutingContext routingContext) {
+    if (currentUser == null) {
+      routingContext.response().end();
+      return;
+    }
+
     HttpServerRequest request = routingContext.request();
 
     String clientId = request.getParam("client_id");
@@ -270,13 +279,17 @@ public class OpenIdConnectServer {
             .put("nbf", 0)
             .put("iat", iat)
             .put("iss", uri.toString())
-            .put("sub", SUB)
+            .put("sub", currentUser.subject)
             .put("typ", type)
             .put("azp", authorizationCode.client.id)
             .put("nonce", authorizationCode.nonce);
 
     if (BEARER_TYPE.equals(type) || ID_TYPE.equals(type)) {
-      claims.put("auth_time", authorizationCode.authenticationTime.toEpochSecond());
+      claims
+          .put("name", currentUser.name)
+          .put("given_name", currentUser.givenName)
+          .put("family_name", currentUser.familyName)
+          .put("auth_time", authorizationCode.authenticationTime.toEpochSecond());
     } else {
       claims.put("auth_time", 0);
     }
