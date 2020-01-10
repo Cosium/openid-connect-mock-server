@@ -5,10 +5,10 @@ import static java.util.Objects.requireNonNull;
 /** @author Réda Housni Alaoui */
 public class User {
 
-  final String subject;
-  final String name;
-  final String givenName;
-  final String familyName;
+  public final String subject;
+  public final String name;
+  public final String givenName;
+  public final String familyName;
 
   private User(Builder builder) {
     this.subject = requireNonNull(builder.subject);
