@@ -17,6 +17,10 @@ public class User {
     this.familyName = builder.familyName;
   }
 
+  public static Builder builder() {
+    return new Builder();
+  }
+
   public static class Builder {
 
     private String subject;
