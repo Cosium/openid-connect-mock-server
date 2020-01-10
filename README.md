@@ -1,5 +1,5 @@
 [![Travis branch](https://img.shields.io/travis/Cosium/openid-connect-mock-server/master.svg)](https://travis-ci.org/Cosium/openid-connect-mock-server)
-[![Maven Central 1.10.x](https://img.shields.io/maven-central/v/com.cosium.openid_connect/openid-connect-mock-server/1.10.svg)](https://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.cosium.openid_connect%22%20AND%20a%3A%22openid-connect-mock-server%22)
+[![Maven Central](https://img.shields.io/maven-central/v/com.cosium.openid_connect/openid-connect-mock-server)](https://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.cosium.openid_connect%22%20AND%20a%3A%22openid-connect-mock-server%22)
 
 # openid-connect-mock-server
 
