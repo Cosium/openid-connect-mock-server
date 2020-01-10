@@ -49,6 +49,8 @@ public class OpenIdConnectServer {
   private static final String REFRESH_TYPE = "Offline";
   private static final String ID_TYPE = "ID";
 
+  private static final String AUTHORIZATION_CODE_GRANT_TYPE = "authorization_code";
+
   private final RSAPrivateKey rsaPrivateKey;
   private final RSAPublicKey rsaPublicKey;
 
@@ -151,7 +153,7 @@ public class OpenIdConnectServer {
 
   private void authenticate(RoutingContext routingContext) {
     if (currentUser == null) {
-      routingContext.response().end();
+      routingContext.response().setStatusCode(501).end("No current user set in " + this);
       return;
     }
 
@@ -160,7 +162,10 @@ public class OpenIdConnectServer {
     String clientId = request.getParam("client_id");
     Client client = clientById.get(clientId);
     if (client == null) {
-      routingContext.response().setStatusCode(404).end();
+      routingContext
+          .response()
+          .setStatusCode(404)
+          .end("No client found for client id '" + clientId + "'");
       return;
     }
 
@@ -179,28 +184,51 @@ public class OpenIdConnectServer {
   }
 
   private void createToken(RoutingContext routingContext) {
-    ClientAuthentication clientAuthentication = new ClientAuthentication(routingContext.request());
+    ClientBasicAuthentication clientAuthentication =
+        new ClientBasicAuthentication(routingContext.request());
     if (!clientAuthentication.isComplete()) {
-      routingContext.response().setStatusCode(401).end();
+      routingContext
+          .response()
+          .setStatusCode(401)
+          .end("Missing client id or client secret in the provided basic authentication");
       return;
     }
 
     Client client = clientById.get(clientAuthentication.clientId);
     if (client == null) {
-      routingContext.response().setStatusCode(401).end();
+      routingContext
+          .response()
+          .setStatusCode(401)
+          .end("No client found for client id '" + clientAuthentication.clientId + "'");
       return;
     }
 
     if (!client.matchSecret(clientAuthentication.clientSecret)) {
-      routingContext.response().setStatusCode(401).end();
+      routingContext
+          .response()
+          .setStatusCode(401)
+          .end(
+              "Provided secret '"
+                  + clientAuthentication.clientSecret
+                  + "' does not match client '"
+                  + client.id
+                  + "' secret");
       return;
     }
 
     HttpServerRequest request = routingContext.request();
 
     String grantType = request.getFormAttribute("grant_type");
-    if (!"authorization_code".equals(grantType)) {
-      routingContext.response().setStatusCode(400).end();
+    if (!AUTHORIZATION_CODE_GRANT_TYPE.equals(grantType)) {
+      routingContext
+          .response()
+          .setStatusCode(400)
+          .end(
+              "Received grant type '"
+                  + grantType
+                  + "'. '"
+                  + AUTHORIZATION_CODE_GRANT_TYPE
+                  + "' is the only supported grant type.");
       return;
     }
 
@@ -208,13 +236,24 @@ public class OpenIdConnectServer {
     AuthorizationCode authorizationCode =
         client.authorizationCodesByValue.get(authorizationCodeValue);
     if (authorizationCode == null) {
-      routingContext.response().setStatusCode(401).end();
+      routingContext
+          .response()
+          .setStatusCode(401)
+          .end("Unrecognized authorization code '" + authorizationCodeValue + "'");
       return;
     }
 
     String redirectUri = request.getFormAttribute("redirect_uri");
     if (!authorizationCode.redirectUri.equals(redirectUri)) {
-      routingContext.response().setStatusCode(401).end();
+      routingContext
+          .response()
+          .setStatusCode(401)
+          .end(
+              "The provided redirect uri '"
+                  + redirectUri
+                  + "' does not match the authorization redirect uri '"
+                  + authorizationCode.redirectUri
+                  + "'");
       return;
     }
 

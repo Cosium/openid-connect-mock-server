@@ -5,11 +5,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 /** @author Réda Housni Alaoui */
-class ClientAuthentication {
+class ClientBasicAuthentication {
   final String clientId;
   final String clientSecret;
 
-  ClientAuthentication(HttpServerRequest request) {
+  ClientBasicAuthentication(HttpServerRequest request) {
     String authorizationHeader = request.getHeader("Authorization");
 
     String base64BasicAuthenticationToken;
