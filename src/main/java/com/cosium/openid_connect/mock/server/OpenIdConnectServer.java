@@ -146,6 +146,7 @@ public class OpenIdConnectServer {
 
   public void reset() {
     clientById.clear();
+    currentUser = null;
   }
 
   private void authenticate(RoutingContext routingContext) {
