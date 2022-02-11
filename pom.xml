@@ -12,7 +12,7 @@
 
   <properties>
     <source.level>1.8</source.level>
-    <vertx.version>3.8.1</vertx.version>
+    <vertx.version>3.9.4</vertx.version>
     <maven-git-code-format.version>1.39</maven-git-code-format.version>
   </properties>
 
